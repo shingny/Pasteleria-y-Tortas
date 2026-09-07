@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import traceback
 from datetime import datetime
 from functools import wraps
 
@@ -556,7 +557,27 @@ def inject_cart():
 
 if __name__=="__main__":
     with app.app_context():
-        db.create_all()
-        seed_data()
+        try:
+            db.create_all()
+            seed_data()
+            print("✅ Base de datos y seed completados exitosamente")
+        except Exception as e:
+            print(f"❌ Error al inicializar la base de datos: {e}")
+            import traceback
+            traceback.print_exc()
+    # Manejador de errores para mostrar errores en modo desarrollo
+    @app.errorhandler(500)
+    def internal_error(error):
+        return f"""
+        <h1>Error Interno del Servidor</h1>
+        <p>{str(error)}</p>
+        <pre>{traceback.format_exc() if 'traceback' in dir() else 'Sin traceback'}</pre>
+        <p>Variables de entorno DATABASE_URL_USERS y DATABASE_URL_ADMIN deben estar configuradas en Render</p>
+        """, 500
+    
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return "<h1>404 - Página no encontrada</h1>", 404
+    
     port=int(os.getenv("PORT",5000))
     app.run(host="0.0.0.0",port=port,debug=True)
