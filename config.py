@@ -19,12 +19,12 @@ class Config:
     ADMIN_USER = os.getenv("ADMIN_USER", "admin")
     ADMIN_PASS = os.getenv("ADMIN_PASS", "Pasteleria2026")
     
-    # Color palette - Pasteleria y Tortas
-    --vaina-culo:#E7C196;    /* Fondo principal - 60% de la web - colores vainilla/hueso */
-    --café-intenso:#382417;  /* Textos, estructura - 30% de la web */
-    --miel:#C57938;          /* Botones de acción - 10% de la web */
-    --caramelo-tostado:#6D3C1C; /* Alternativa para botones */
+    # Color palette - Pasteleria y Tortas (Corregido para Python)
+    VAINA_CULO = "#E7C196"          # Fondo principal - 60% de la web - colores vainilla/hueso
+    CAFE_INTENSO = "#382417"        # Textos, estructura - 30% de la web
+    MIEL = "#C57938"                # Botones de acción - 10% de la web
+    CARAMELO_TOSTADO = "#6D3C1C"    # Alternativa para botones
     
     # Derivados más claros para fondos
-    --hueso:#FDFDFD;         /* Blanco hueso aún más claro para áreas extensas */
-    --crema:#FFF8EF;         /* Crema suave */
+    HUESO = "#FDFDFD"               # Blanco hueso aún más claro para áreas extensas
+    CREMA = "#FFF8EF"               # Crema suave
