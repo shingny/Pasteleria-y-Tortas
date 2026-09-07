@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+  <div style="max-width:600px; margin:0 auto; padding:2rem; text-align:center;">
+    <div style="width:100px; height:100px; background:var(--miel); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; color:white; font-size:3rem;">
+      ✅
+    </div>
+    <h2 style="color:var(--café-intenso); margin-bottom:1rem;">¡Compra realizada con éxito!</h2>
+    <p style="color:#5a4a3a; margin-bottom:2rem; font-size:1.1rem;">Gracias por tu pedido. Estamos preparando tus tortas con mucho cariño.</p>
+    
+    <div style="background:white; padding:1.5rem; border-radius:12px; margin:1.5rem auto; max-width:400px; box-shadow:0 4px 16px rgba(56,36,23,0.08);">
+      <h3 style="color:var(--café-intenso); margin-bottom 1rem;">Detalle del pedido</h3>
+      <p><strong>Número de pedido:</strong> #{{ order.id }}</p>
+      <p><strong>Total pagado:</strong> S/ {{ order.total|round(2) }}</p>
+      <p><strong>Método de pago:</strong> {{ order.payment_method }}</p>
+    </div>
+    
+    <div style="margin-top:2rem;">
+      <h4>Próximos pasos:</h4>
+      <ol style="text-align:left; margin:0 auto; max-width:400px; color:#5a4a3a;">
+        <li>Recibirás una notificación en WhatsApp al número 943846909</li>
+        <li>Confirma tu dirección de entrega</li>
+        <li>Tu pedido será entregado en un plazo de 45-60 minutos</li>
+      </ol>
+    </div>
+  </div>
+</section>
+{% endblock %}

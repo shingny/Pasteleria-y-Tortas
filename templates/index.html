@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="hero-text">
+    <span class="hero-badge">Desde 2026 • Tradición familiar</span>
+    <h1>El sabor de casa,<br> <span>ahora a un clic</span></h1>
+    <p>5 tiendas, un mismo sabor. Elige tu tienda más cercana y disfruta de tortas, postres y bocaditos hechos con receta tradicional.</p>
+    <div class="hero-actions">
+      <a href="#tiendas" class="btn btn-primary">Ver tiendas ↓</a>
+      <span class="hero-note">🕒 Todas abiertas 8am — 9pm</span>
+    </div>
+  </div>
+  <div class="hero-img">
+    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=700" alt="Tortas Pastelería y Tortas">
+    <div class="hero-card">
+      <p><strong>+10 000</strong> clientes felices</p>
+      <p>⭐ 4.9/5 valoración</p>
+    </div>
+  </div>
+</section>
+
+<section id="tiendas" class="section">
+  <div class="section-head">
+    <h2>Nuestras 5 tiendas</h2>
+    <p>Selecciona tu tienda favorita. Cada tienda tiene su propio catálogo y stock en tiempo real.</p>
+  </div>
+  <div class="stores-grid">
+    {% for s in stores %}
+    <article class="store-card">
+      <div class="store-img">
+        <img src="{{ s.image_url }}" alt="{{ s.name }}">
+        <span class="status-open">🟢 Abierto ahora</span>
+      </div>
+      <div class="store-body">
+        <h3>{{ s.name }}</h3>
+        <p class="store-addr">📍 {{ s.address }}</p>
+        <p class="store-phone">📞 {{ s.phone }}</p>
+        <!-- identificador oculto solo en código (data-attribute + comentario) -->
+        <!-- STORE_IDENTIFIER: {{ s.identifier }} -->
+        <span class="hidden-identifier" data-identifier="{{ s.identifier }}" style="display:none">{{ s.identifier }}</span>
+        <a href="{{ url_for('tienda', slug=s.slug) }}" class="btn btn-primary btn-block">Entrar a la tienda →</a>
+        <p class="store-meta">Listo para recojo • Delivery disponible</p>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="features">
+  <div class="feat"><span>🚚</span><h4>Delivery rápido</h4><p>Entrega en 45–60 min</p></div>
+  <div class="feat"><span>🎂</span><h4>Personalizable</h4><p>Elige tamaño, sabor y cantidad</p></div>
+  <div class="feat"><span>🛒</span><h4>Carrito inteligente</h4><p>Guardado automático</p></div>
+  <div class="feat"><span>💳</span><h4>Pago flexible</h4><p>Yape, Tarjeta o Contra entrega</p></div>
+</section>
+{% endblock %}

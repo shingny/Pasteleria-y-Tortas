@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: pasteleria-y-tortas
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL_USERS
+        sync: false
+      # Base de datos usuarios en AlwaysData (usuarios
+      - key: DATABASE_URL_USERS_VALUE
+        sync: false
+      - key: DATABASE_URL_ADMIN
+        sync: false
+      # Base de datos admin en AlwaysData
+      - key: DB_PASSWORD_USERS
+        generateValue: true
+      - key: DB_PASSWORD_ADMIN
+        generateValue: true
+      - key: ADMIN_USER
+        value: admin
+      - key: ADMIN_PASS
+        value: Pasteleria2026
+      - key: PYTHON_VERSION
+        value: 3.11.0

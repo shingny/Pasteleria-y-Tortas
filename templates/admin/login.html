@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Admin Login - Pastelería y Tortas{% endblock %}
+{% block content %}
+<div class="admin-login">
+  <div class="login-card">
+    <h2>🔐 Panel Administrador</h2>
+    <p style="color:#6a5a50; font-size:14px">Ingresa credenciales para acceder al panel de control.</p>
+    <form method="POST" style="margin-top:18px">
+      <label>Usuario<input type="text" name="username" required placeholder="admin" value="admin"></label>
+      <label>Contraseña<input type="password" name="password" required placeholder="••••••••" value="Pasteleria2026"></label>
+      <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px">Ingresar</button>
+    </form>
+    <div style="margin-top:14px; background:rgba(231,193,150,0.1); border:1px solid var(--miel); border-radius:10px; padding:10px; font-size:13px">
+      <p><strong>Demo:</strong> admin / Pasteleria2026</p>
+      <p style="margin-top:4px; color:#5a4a3a">Identificadores de tienda disponibles en el panel.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

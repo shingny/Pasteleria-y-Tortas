@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Pastelería y Tortas{% endblock %}
+{% block content %}
+<div class="admin-header">
+  <div>
+    <h1>🍰 Panel Administrador</h1>
+    <p style="color:#6a5a50; font-size:13px">Gestión de tiendas • Desde 2026</p>
+  </div>
+  <a href="{{ url_for('admin_logout') }}" class="btn btn-secondary">Cerrar sesión</a>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-atab="pedidos">📦 Pedidos</button>
+  <button class="tab" data-atab="catalogo">📚 Catálogo</button>
+  <button class="tab" data-atab="historial">📜 Historial</button>
+</div>
+
+<!-- PEDIDOS -->
+<div id="atab-pedidos" class="atab-panel active">
+  <div class="admin-section-head">
+    <h3>📦 Pedidos recientes</h3>
+    <span class="badge-live">● En vivo • {{ orders|length }} pedidos</span>
+  </div>
+  <p style="color:#6a5a50; font-size:13px; margin-bottom:12px">Cada compra muestra tienda, cliente, contacto, método de pago y detalle de productos.</p>
+  {% if orders %}
+  <div class="kpi-row">
+    <div class="kpi"><span class="kpi-label">Pedidos hoy</span><span class="kpi-val">{{ orders|length }}</span></div>
+    <div class="kpi" style="border-left:4px solid var(--miel)"><span class="kpi-label">Monto total</span><span class="kpi-val" style="color:var(--miel)">S/ {{ '%.2f'|format(total_sum) }}</span></div>
+    <div class="kpi" style="border-left:4px solid var(--caramelo-tostado)"><span class="kpi-label">Ticket promedio</span><span class="kpi-val">S/ {{ '%.2f'|format(total_sum / orders|length if orders|length>0 else 0) }}</span></div>
+  </div>
+  {% endif %}
+  <div id="orders-list" class="orders-grid">
+    {% for o in orders %}
+    <div class="order-card order-friendly">
+      <div class="order-top" style="border-left:4px solid {% if o.payment_method=='yape' %}var(--miel){% elif o.payment_method=='tarjeta' %}#e53935{% else %}#6a5a50{% endif %}">
+        <div>
+          <strong style="color:var(--café-intenso)">#{{ o.id }} • {{ o.store.name }}</strong>
+          <div style="font-size:12px; color:#6a5a50">{{ o.created_at.strftime('%d/%m/%Y %H:%M') }} • {{ o.payment_method|upper }}</div>
+        </div>
+        <span class="badge-order {{ o.status }}">{{ o.status }}</span>
+      </div>
+      <div class="order-body">
+        <div class="order-row"><span class="lbl">👤 Cliente</span><span><strong>{{ o.customer_name }}</strong> <small style="background:rgba(231,193,150,0.2); padding:2px 6px; border-radius:6px">DNI {{ o.dni }}</small></span></div>
+        <div class="order-row"><span class="lbl">📧 Contacto</span><span>{{ o.email }} • {{ o.phone }}</span></div>
+        <div class="order-row total-row"><span class="lbl">💰 Total</span><span class="total-val">S/ {{ '%.2f'|format(o.total) }}</span></div>
+      </div>
+      <details class="order-details"><summary>🧁 Ver detalle ({{ o.items|length }} productos) ↓</summary>
+        <div style="margin-top:8px">
+          {% for it in o.items %}
+          <div class="order-item-row">
+            <span>{{ it.product_name }}<small>{{ it.variant_detail }}</small></span>
+            <span>x{{ it.quantity }} • <strong>S/ {{ '%.2f'|format(it.subtotal) }}</strong></span>
+          </div>
+          {% endfor %}
+        </div>
+      </details>
+    </div>
+    {% else %}
+    <div style="padding:30px; border-radius:16px; text-align:center; grid-column:1/-1;">
+      <p style="font-size:40px">📭</p><p>No hay pedidos aún. Cuando un cliente compre, aparecerá aquí.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- CATALOGO -->
+<div id="atab-catalogo" class="atab-panel">
+  <div class="admin-section-head">
+    <h3>📚 Catálogo por tienda</h3>
+    <span style="background:var(--café-intenso); color:white; padding:6px 12px; border-radius:20px; font-size:12px">Edición en tiempo real</span>
+  </div>
+  <div style="background:rgba(231,193,150,0.1); border:1px solid var(--miel); padding:16px; border-radius:14px; margin:12px 0">
+    <label><strong>🔑 Identificador de tienda <small style="color:var(--café-intenso)">(oculto en código)</small></strong>
+      <div style="display:flex; gap:8px; margin-top:8px">
+        <input id="identifier-input" type="text" placeholder="Ej: PT-CENTRO-2026-A7X9" style="flex:1; padding:12px; border-radius:10px; border:1.5px solid var(--miel)">
+        <button class="btn btn-primary" onclick="loadCatalog()" style="padding:12px 20px">Cargar catálogo</button>
+        <button class="btn btn-secondary" onclick="clearCatalog()">Limpiar</button>
+      </div>
+      <small style="color:var(--café-intenso); display:block; margin-top:6px">Pega el identificador que está en el HTML <code>data-identifier</code> de la página principal. No se muestran productos hasta hacer click.</small>
+    </label>
+    <div style="margin-top:12px">
+      <p style="font-size:13px; font-weight:600">Tiendas disponibles (atajo):</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px">
+        {% for s in stores %}
+        <button class="btn btn-ghost" style="font-size:12px; border-color:var(--café-intenso); color:var(--café-intenso)" onclick="document.getElementById('identifier-input').value='{{ s.identifier }}';loadCatalog()">{{ s.name }} → {{ s.identifier }}</button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="catalog-toolbar">
+    <button class="cat-btn active" data-cat="tortas" onclick="setCatalogCategory('tortas')">Tortas</button>
+    <button class="cat-btn" data-cat="bocaditos" onclick="setCatalogCategory('bocaditos')">Bocaditos</button>
+    <button class="cat-btn" data-cat="postres" onclick="setCatalogCategory('postres')">Postres</button>
+    <button class="btn btn-primary" onclick="openProductModal()" style="margin-left:8px">＋ Nuevo producto</button>
+    <span id="catalog-store-name" class="catalog-badge"></div>
+  </div>
+
+  <div id="catalog-placeholder" class="placeholder-box">
+    <p style="font-size:32px">🔒</p>
+    <p><strong>Ingresa el identificador y presiona "Cargar catálogo"</strong></p>
+    <p style="font-size:12px; color:#6a5a50">Los productos no se muestran automáticamente por seguridad.</p>
+  </div>
+  <div id="catalog-grid" class="products-grid" style="display:none"></div>
+</div>
+
+<!-- HISTORIAL -->
+<div id="atab-historial" class="atab-panel">
+  <div class="admin-section-head">
+    <h3>📜 Historial de compras</h3>
+    <span style="background:#17A2A0; color:white; padding:6px 12px; border-radius:20px; font-size:12px">Búsqueda por nombre/DNI</span>
+  </div>
+  <div class="history-toolbar">
+    <input id="hist-q" type="text" placeholder="🔍 Buscar por nombre o DNI..." style="flex:1; padding:12px; border-radius:10px; border:1.5px solid var(--miel)">
+    <button class="btn btn-primary" onclick="loadHistory()">Filtrar</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('hist-q').value='';loadHistory()">Limpiar</button>
+    <button class="btn" style="background:var(--pink); color:white" onclick="clearHistory()">🗑️ Borrar vista</button>
+  </div>
+  <div id="history-total" class="history-kpi"></div>
+  <div id="history-list"></div>
+</div>
+
+<!-- MODAL PRODUCTO -->
+<div id="product-modal" class="modal" style="display:none">
+  <div class="modal-content">
+    <h3 id="modal-title">Nuevo producto</h3>
+    <form id="product-form">
+      <input type="hidden" id="p-id">
+      <label>Nombre<input id="p-name" required style="padding:10px"></label>
+      <label>Descripción<input id="p-desc" style="padding:10px"></label>
+      <label>Imagen URL<input id="p-img" placeholder="https://..." style="padding:10px"></label>
+      <div style="display:flex; gap:10px">
+        <label style="flex:1">Categoría<select id="p-cat" style="padding:10px"><option value="tortas">Tortas</option><option value="bocaditos">Bocaditos</option><option value="postres">Postres</option></select></label>
+        <label style="flex:1">Subcategoría<select id="p-sub" style="padding:10px"></select></label>
+      </div>
+      <label>Stock<input id="p-stock" type="number" value="100" style="padding:10px"></label>
+      <div style="background:rgba(231,193,150,0.2); border:1.5px solid var(--miel); border-radius:12px; padding:12px; margin-top:12px">
+        <label style="font-weight:700; color:var(--café-intenso)">⚙️ Configuración de precio (amigable, sin JSON)</label>
+        <label style="margin-top:8px">Tipo de precio<select id="p-price-type" style="padding:10px"></select></label>
+        <div id="p-price-fields" style="margin-top:10px"></div>
+        <small style="color:#6a5a50; display:block; margin-top:6px">Se genera automáticamente el JSON. No necesitas escribir código.</small>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:16px">
+        <button type="button" class="btn btn-secondary" style="flex:1" onclick="closeProductModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" style="flex:1">💾 Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

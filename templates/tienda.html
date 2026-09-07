@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ store.name }} - Pastelería y Tortas{% endblock %}
+{% block content %}
+<div class="store-header">
+  <img src="{{ store.image_url }}" alt="{{ store.name }}">
+  <div>
+    <span class="hero-badge" style="background:var(--miel); color:white">🟢 Abierto ahora</span>
+    <h1>{{ store.name }}</h1>
+    <p>📍 {{ store.address }} • 📞 {{ store.phone }}</p>
+    <!-- identificador oculto solo en fuente -->
+    <!-- STORE_IDENTIFIER: {{ store.identifier }} -->
+    <span style="display:none" data-store-id="{{ store.id }}" data-identifier="{{ store.identifier }}"></span>
+    <p style="font-size:13px; color:#5a4a3a; margin-top:6px">Catálogo actualizado en tiempo real • Stock verificado</p>
+  </div>
+  <a href="{{ url_for('carrito') }}" class="btn btn-secondary">🛒 Ver carrito (<span id="cart-count">{{ cart_count }}</span>)</a>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="tortas">🎂 Tortas</button>
+  <button class="tab" data-tab="bocaditos">🥐 Bocaditos</button>
+  <button class="tab" data-tab="postres">🍮 Postres</button>
+</div>
+
+<!-- TORTAS -->
+<div id="panel-tortas" class="tab-panel active">
+  <div class="sub-tabs">
+    <button class="sub-tab active" data-sub="queque">Queque</button>
+    <button class="sub-tab" data-sub="selva_negra">Selva Negra</button>
+    <button class="sub-tab" data-sub="tres_leches">3 Leches</button>
+    <button class="sub-tab" data-sub="tres_leches_especial">3 Leches Especial</button>
+  </div>
+  <div class="products-grid" id="grid-tortas"></div>
+</div>
+
+<!-- BOCADITOS -->
+<div id="panel-bocaditos" class="tab-panel">
+  <div class="sub-tabs">
+    <button class="sub-tab active" data-sub="bocadito_clasico">Clásicos (queso, jamón...)</button>
+    <button class="sub-tab" data-sub="empanada">Empanadas</button>
+  </div>
+  <div class="products-grid" id="grid-bocaditos"></div>
+</div>
+
+<!-- POSTRES -->
+<div id="panel-postres" class="tab-panel">
+  <div class="sub-tabs">
+    <button class="sub-tab active" data-sub="postre_tres_leches">3 Leches S/6</button>
+    <button class="sub-tab" data-sub="postre_queque">Queque S/6</button>
+    <button class="sub-tab" data-sub="postre_helada">Heladas S/4.50</button>
+  </div>
+  <div class="products-grid" id="grid-postres"></div>
+</div>
+
+<!-- data for JS -->
+<script>
+window.STORE_ID = {{ store.id }};
+window.STORE_SLUG = "{{ store.slug }}";
+window.PRODUCTS = [
+{% for p in products %}
+{
+  id: {{ p.id }},
+  store_id: {{ p.store_id }},
+  category: "{{ p.category }}",
+  subcategory: "{{ p.subcategory }}",
+  name: "{{ p.name|replace('"','\\\\''') }}",
+  description: "{{ p.description|replace('"','\\\\''') }}",
+  image_url: "{{ p.image_url }}",
+  stock: {{ p.stock }},
+  price_config: {{ p.price_config | safe }},
+},
+{% endfor %}
+];
+</script>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tienda.js') }}"></script>
+{% endblock %}
+{% endblock %}

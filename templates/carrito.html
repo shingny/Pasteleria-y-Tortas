@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+  <div class="cart-layout">
+    <div class="cart-summary">
+      <h3>Resumen de carrito</h3>
+      {% if cart %}
+        {% for item in cart %}
+          <div class="cart-item">
+            <img src="{{ item.image_url }}" alt="{{ item.name }}">
+            <div class="cart-info">
+              <h4>{{ item.name }}</h4>
+              <p class="variant">{{ item.variant_detail }}</p>
+              <div class="cantidad">
+                <button class="qty-btn qty-minus" onclick="changeQty({{ item.product_id }}, -1)">−</button>
+                <input type="number" min="1" max="{{ item.stock }}" value="{{ item.quantity }}" class="qty-input sel-count" data-id="{{ item.product_id }}" inputmode="numeric">
+                <button class="qty-btn qty-plus" onclick="changeQty({{ item.product_id }}, 1)">+</button>
+              </div>
+            </div>
+            <span class="price">S/ {{ item.unit_price|round(2) }}</span>
+            <span class="cart-subtotal">S/ {{ item.subtotal|round(2) }}</span>
+            <button class="btn-remove" onclick="removeFromCart({{ loop.index0 }})">✕</button>
+          </div>
+        {% endfor %}
+        <div class="cart-subtotal" style="margin-top:1rem; padding-top:1rem; border-top:1px solid #e8e0d8;">
+          <span>Total:</span> <strong>S/ {{ total|round(2) }}</strong>
+        </div>
+      {% else %}
+        <div class="empty-cart">
+          <h3>Tu carrito está vacío</h3>
+          <p>Añade productos desde la tienda.</p>
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="cart-actions">
+      <h3>Checkout</h3>
+      <form id="checkout-form">
+        <div class="form-group">
+          <label>Nombre completo</label>
+          <input type="text" name="nombre" required placeholder="Tu nombre completo">
+        </div>
+        <div class="form-group">
+          <label>DNI</label>
+          <input type="text" name="dni" required placeholder="12345678" pattern="^\d{8}$">
+        </div>
+        <div class="form-group">
+          <label>Teléfono (9 dígitos)</label>
+          <input type="tel" name="phone" required placeholder="943846909" pattern="^9\d{8}$">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" required placeholder="tu@email.com">
+        </div>
+        <button type="submit" class="btn btn-checkout">Confirmar Pedido</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
