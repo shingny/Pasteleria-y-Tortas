@@ -25,3 +25,5 @@ services:
         value: Pasteleria2026
       - key: PYTHON_VERSION
         value: 3.11.0
+      # --- FORZAR RENDER REDEPLOY 2026 ---
+      # Este comentario fuerza a Render a detectar cambio en el push
