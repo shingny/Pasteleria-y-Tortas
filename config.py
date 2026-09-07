@@ -10,10 +10,10 @@ class Config:
     
     # Dual MySQL database configuration for AlwaysData
     # Database 1: for all users (public data - products, stores, orders)
-    SQLALCHEMY_DATABASE_URI_USERS = os.getenv("DATABASE_URL_USERS") or f"mysql+pymysql://usuario:{os.getenv('DB_PASSWORD_USERS', 'password_users')}@mysql-xxx.alwaysdata.net/pasteleria_usuarios"
+    SQLALCHEMY_DATABASE_URI_USERS = os.getenv("DATABASE_URL_USERS") or f"mysql+pymysql://sistemawebsanfrancisco987:{os.getenv('DB_PASSWORD_USERS', 'password_users')}@mysql-sistemawebsanfrancisco987.alwaysdata.net/sistemawebsanfrancisco987_users"
     
     # Database 2: for admin panel (administrative data)
-    SQLALCHEMY_DATABASE_URI_ADMIN = os.getenv("DATABASE_URL_ADMIN") or f"mysql+pymysql://admin:{os.getenv('DB_PASSWORD_ADMIN', 'password_admin')}@mysql-xxx.alwaysdata.net/pasteleria_admin"
+    SQLALCHEMY_DATABASE_URI_ADMIN = os.getenv("DATABASE_URL_ADMIN") or f"mysql+pymysql://admin:{os.getenv('DB_PASSWORD_ADMIN', 'password_admin')}@mysql-sistemawebsanfrancisco987.alwaysdata.net/sistemawebsanfrancisco987_admin"
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ADMIN_USER = os.getenv("ADMIN_USER", "admin")
