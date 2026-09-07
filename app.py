@@ -13,45 +13,45 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Configurar dos bases de datos
-# Base de datos 1: Usuarios (productos, tiendas, órdenes)
-app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI_USERS']
-db_users = SQLAlchemy(app)
+# Configurar una sola instancia de SQLAlchemy con dos binds
+app.config['SQLALCHEMY_BINDS'] = {
+    'users': app.config['SQLALCHEMY_DATABASE_URI_USERS'],
+    'admin': app.config['SQLALCHEMY_DATABASE_URI_ADMIN']
+}
 
-# Base de datos 2: Panel de administración (datos administrativos)
-app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI_ADMIN']
-db_admin = SQLAlchemy(app)
+db = SQLAlchemy(app)
 
-# Modelos de la base de datos para usuarios (clientes)
-class Store(db_users.Model):
+# ===================== MODELOS USUARIOS (base de datos users) =====================
+class Store(db.Model):
+    __bind_key__ = 'users'
     __tablename__ = "stores"
-    id = db_users.Column(db_users.Integer, primary_key=True)
-    name = db_users.Column(db_users.String(120), nullable=False)
-    slug = db_users.Column(db_users.String(80), unique=True, nullable=False)
-    address = db_users.Column(db_users.String(200), default="")
-    image_url = db_users.Column(db_users.String(500), default="")
-    identifier = db_users.Column(db_users.String(50), unique=True, nullable=False)  # oculto, solo visible en código / admin
-    is_open = db_users.Column(db_users.Boolean, default=True)
-    phone = db_users.Column(db_users.String(30), default="943846909")
-    products = db_users.relationship("Product", backref="store", cascade="all, delete-orphan", lazy=True)
-    orders = db_users.relationship("Order", backref="store", lazy=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    slug = db.Column(db.String(80), unique=True, nullable=False)
+    address = db.Column(db.String(200), default="")
+    image_url = db.Column(db.String(500), default="")
+    identifier = db.Column(db.String(50), unique=True, nullable=False)
+    is_open = db.Column(db.Boolean, default=True)
+    phone = db.Column(db.String(30), default="943846909")
+    products = db.relationship("Product", backref="store", cascade="all, delete-orphan", lazy=True)
+    orders = db.relationship("Order", backref="store", lazy=True)
 
     def to_dict(self):
         return {"id": self.id, "name": self.name, "slug": self.slug, "address": self.address, "image_url": self.image_url, "identifier": self.identifier, "is_open": self.is_open}
 
-class Product(db_users.Model):
+class Product(db.Model):
+    __bind_key__ = 'users'
     __tablename__ = "products"
-    id = db_users.Column(db_users.Integer, primary_key=True)
-    store_id = db_users.Column(db_users.Integer, db_users.ForeignKey("stores.id"), nullable=False)
-    category = db_users.Column(db_users.String(30), nullable=False)  # tortas, bocaditos, postres
-    subcategory = db_users.Column(db_users.String(50), nullable=False)
-    name = db_users.Column(db_users.String(120), nullable=False)
-    description = db_users.Column(db_users.String(500), default="")
-    image_url = db_users.Column(db_users.String(500), default="")
-    stock = db_users.Column(db_users.Integer, default=100)
-    # JSON con configuración de precio: {"type":"size","prices":{"pequeño":25,...}, "flavors":[...]}
-    price_config = db_users.Column(db_users.Text, default="{}")
-    is_active = db_users.Column(db_users.Boolean, default=True)
+    id = db.Column(db.Integer, primary_key=True)
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.id"), nullable=False)
+    category = db.Column(db.String(30), nullable=False)
+    subcategory = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(500), default="")
+    image_url = db.Column(db.String(500), default="")
+    stock = db.Column(db.Integer, default=100)
+    price_config = db.Column(db.Text, default="{}")
+    is_active = db.Column(db.Boolean, default=True)
 
     def get_price_config(self):
         try:
@@ -67,48 +67,37 @@ class Product(db_users.Model):
             "is_active": self.is_active
         }
 
-class Order(db_users.Model):
+class Order(db.Model):
+    __bind_key__ = 'users'
     __tablename__ = "orders"
-    id = db_users.Column(db_users.Integer, primary_key=True)
-    store_id = db_users.Column(db_users.Integer, db_users.ForeignKey("stores.id"), nullable=False)
-    customer_name = db_users.Column(db_users.String(120), nullable=False)
-    dni = db_users.Column(db_users.String(20), nullable=False)
-    email = db_users.Column(db_users.String(120), nullable=False)
-    phone = db_users.Column(db_users.String(30), nullable=False)
-    payment_method = db_users.Column(db_users.String(30), nullable=False)  # yape, plin, tarjeta
-    total = db_users.Column(db_users.Float, nullable=False, default=0)
-    status = db_users.Column(db_users.String(30), default="nuevo")
-    created_at = db_users.Column(db_users.DateTime, default=datetime.utcnow)
-    # para historial borrable sin borrar BD real: soft delete flag solo visual
-    hidden = db_users.Column(db_users.Boolean, default=False)
-    items = db_users.relationship("OrderItem", backref="order", cascade="all, delete-orphan", lazy=True)
+    id = db.Column(db.Integer, primary_key=True)
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.id"), nullable=False)
+    customer_name = db.Column(db.String(120), nullable=False)
+    dni = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(30), nullable=False)
+    payment_method = db.Column(db.String(30), nullable=False)
+    total = db.Column(db.Float, nullable=False, default=0)
+    status = db.Column(db.String(30), default="nuevo")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    hidden = db.Column(db.Boolean, default=False)
+    items = db.relationship("OrderItem", backref="order", cascade="all, delete-orphan", lazy=True)
 
-class OrderItem(db_users.Model):
+class OrderItem(db.Model):
+    __bind_key__ = 'users'
     __tablename__ = "order_items"
-    id = db_users.Column(db_users.Integer, primary_key=True)
-    order_id = db_users.Column(db_users.Integer, db_users.ForeignKey("orders.id"), nullable=False)
-    product_id = db_users.Column(db_users.Integer, db_users.ForeignKey("products.id"), nullable=True)
-    product_name = db_users.Column(db_users.String(120), nullable=False)
-    variant_detail = db_users.Column(db_users.String(300), default="")  # ej: "Sabor: maracuyá | Tamaño: grande"
-    quantity = db_users.Column(db_users.Integer, default=1)
-    unit_price = db_users.Column(db_users.Float, nullable=False)
-    subtotal = db_users.Column(db_users.Float, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=True)
+    product_name = db.Column(db.String(120), nullable=False)
+    variant_detail = db.Column(db.String(300), default="")
+    quantity = db.Column(db.Integer, default=1)
+    unit_price = db.Column(db.Float, nullable=False)
+    subtotal = db.Column(db.Float, nullable=False)
 
-# Modelos para la base de datos de administración
-class AdminSetting(db_admin.Model):
-    __tablename__ = "admin_settings"
-    id = db_admin.Column(db_admin.Integer, primary_key=True)
-    key = db_admin.Column(db_admin.String(80), unique=True, nullable=False)
-    value = db_admin.Column(db_admin.String(500), default="")
-    updated_at = db_admin.Column(db_admin.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-class AdminLog(db_admin.Model):
-    __tablename__ = "admin_logs"
-    id = db_admin.Column(db_admin.Integer, primary_key=True)
-    action = db_admin.Column(db_admin.String(100), nullable=False)
-    user_id = db_admin.Column(db_admin.Integer, nullable=True)
-    ip_address = db_admin.Column(db_admin.String(50), nullable=True)
-    created_at = db_admin.Column(db_admin.DateTime, default=datetime.utcnow)
+# ===================== MODELOS ADMINISTRACIÓN (base de datos admin) =====================
+# Los modelos de admin usan la misma instancia db pero con bind 'admin'
+# Opcional: si necesitas modelos separados, pueden definir __bind_key__ = 'admin'
 
 # ===================== HELPERS =====================
 def login_required(f):
@@ -155,14 +144,11 @@ def cart_total(cart):
 
 # ===================== SEED DATA =====================
 def seed_data():
-    # Usar la base de datos de usuarios
     with app.app_context():
-        db_users.create_all()
+        db.create_all()
         
-        # Verificar si ya existen datos
         existing = Store.query.first()
         if existing:
-            # Already seeded, just ensure products exist
             if Product.query.first():
                 return
         
@@ -179,25 +165,20 @@ def seed_data():
         for sd in stores_data:
             if sd["slug"] not in existing_store_ids:
                 s = Store(**sd)
-                db_users.session.add(s)
+                db.session.add(s)
         
-        db_users.session.commit()
+        db.session.commit()
         stores = Store.query.all()
         
-        # Helper para crear productos
         def add_product(store, category, subcategory, name, desc, img, stock, cfg):
             p = Product(store_id=store.id, category=category, subcategory=subcategory, name=name, description=desc, image_url=img, stock=stock, price_config=json.dumps(cfg))
-            db_users.session.add(p)
+            db.session.add(p)
         
         for store in stores:
             # --- TORTAS ---
-            # Tortas de queque
             add_product(store,"tortas","queque","Torta de Queque","Bizcocho esponjoso tradicional, ideal para cumpleaños.","https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500",80, {"type":"size","prices":{"pequeño":25,"mediano":35,"grande":45}})
-            # Tortas selva negra (vainilla y moca)
             add_product(store,"tortas","selva_negra","Torta Selva Negra","Clásica selva negra con cerezas y crema chantilly.","https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=500",60, {"type":"size_flavor","prices":{"pequeño":30,"mediano":40,"grande":50},"flavors":["vainilla","moca"]})
-            # Tortas 3 leches (moca, vainilla)
             add_product(store,"tortas","tres_leches","Torta Tres Leches Clásica","Húmeda y cremosa tres leches tradicional.","https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=500",60, {"type":"size_flavor","prices":{"pequeño":30,"mediano":40,"grande":50},"flavors":["moca","vainilla"]})
-            # Tortas 3 leches especial sabores (grande 60)
             for sabor in ["maracuyá","fresa","lúcuma","mango","coco","café"]:
                 add_product(store,"tortas","tres_leches_especial",f"Torta 3 Leches - {sabor.capitalize()}","Tres leches especial sabor "+sabor+", tamaño grande.", "https://images.unsplash.com/photo-1542826438-bd32f43d626f?w=500",40, {"type":"fixed_size_especial","price":60,"flavor":sabor,"size":"grande"})
             # --- BOCADITOS ---
@@ -213,7 +194,7 @@ def seed_data():
             for sabor in ["torta helada clásica","helada de oreo"]:
                 add_product(store,"postres","postre_helada",f"Postre Helado - {sabor.capitalize()}","Postre frío de chocolate.","https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500",100, {"type":"fixed","price":4.5,"flavor":sabor})
         
-        db_users.session.commit()
+        db.session.commit()
         print("Seed completado con 5 tiendas y catálogo para base de usuarios.")
 
 # ===================== RUTAS PÚBLICAS =====================
@@ -257,13 +238,12 @@ def api_cart_add():
     data = request.get_json()
     product_id = data.get("product_id")
     store_id = data.get("store_id")
-    variant = data.get("variant", {})  # {size, flavor, qty}
-    qty_units = int(data.get("quantity", 1))  # cantidad de veces que compra ese producto (ej 2 tortas)
+    variant = data.get("variant", {})
+    qty_units = int(data.get("quantity", 1))
     product = Product.query.get(product_id)
     if not product:
         return jsonify({"error":"Producto no encontrado"}), 404
     cfg = product.get_price_config()
-    # calcular precio unitario según variante
     selected = {}
     if cfg.get("type") in ["size","size_flavor","fixed_size_especial"]:
         selected["size"] = variant.get("size","pequeño" if cfg.get("type")!="fixed_size_especial" else "grande")
@@ -271,7 +251,6 @@ def api_cart_add():
     elif cfg.get("type") in ["bocadito_clasico","bocadito_empanada"]:
         selected["qty"] = variant.get("qty","25")
     unit_price = calculate_price(product, selected)
-    # detalle variante para mostrar
     detail_parts=[]
     if selected.get("flavor"):
         detail_parts.append(f"Sabor: {selected['flavor']}")
@@ -280,11 +259,9 @@ def api_cart_add():
     if selected.get("qty"):
         detail_parts.append(f"Cantidad: {selected['qty']} unidades")
     variant_detail = " | ".join(detail_parts) if detail_parts else "Estándar"
-    # verificar stock
     if product.stock < qty_units:
         return jsonify({"error":"Stock insuficiente"}), 400
     cart = get_cart()
-    # buscar si ya existe mismo producto+variante
     found=False
     for item in cart:
         if item["product_id"]==product_id and item["variant_detail"]==variant_detail and item["unit_price"]==unit_price:
@@ -313,7 +290,7 @@ def api_cart_add():
 def api_cart_update():
     data = request.get_json()
     idx = int(data.get("index", -1))
-    action = data.get("action")  # increase, decrease, set
+    action = data.get("action")
     quantity = data.get("quantity")
     cart = get_cart()
     if idx <0 or idx >= len(cart):
@@ -375,42 +352,36 @@ def api_checkout():
     if not all([nombre,dni,email,phone]):
         return jsonify({"error":"Faltan datos del cliente"}),400
     
-    # Validar celular peruano: 9 dígitos empezando por 9
     if not re.match(r'^9\d{8}$', phone):
         return jsonify({"error":"Celular inválido: debe tener 9 dígitos y empezar con 9"}),400
     
     if not re.match(r'^\d{8}$', dni):
         return jsonify({"error":"DNI inválido: debe tener 8 dígitos"}),400
     
-    # Asumir todos los items son de la misma tienda (o tomar la primera)
     store_id = cart[0].get("store_id")
     store = Store.query.get(store_id)
     total = cart_total(cart)
     
-    # CREAR ORDEN EN BASE DE DATOS
     order = Order(store_id=store_id, customer_name=nombre, dni=dni, email=email, phone=phone, payment_method=payment, total=total)
-    db_users.session.add(order)
-    db_users.session.flush()
+    db.session.add(order)
+    db.session.flush()
     
     for c in cart:
         oi = OrderItem(order_id=order.id, product_id=c["product_id"], product_name=c["name"], variant_detail=c["variant_detail"], quantity=c["quantity"], unit_price=c["unit_price"], subtotal=c["subtotal"])
-        db_users.session.add(oi)
-        # descontar stock
+        db.session.add(oi)
         prod=Product.query.get(c["product_id"])
         if prod:
             prod.stock = max(0, prod.stock - c["quantity"])
-    db_users.session.commit()
+    db.session.commit()
     save_cart([])
     
-    # ENVIAR MENSAJE A WHATSAPP
     whatsapp_message = f"Hola! Acabo de realizar una reserva de mi compra de tortas en su página web. Aquí le adjunto la foto del pago de Yape."
-    whatsapp_url = f"https://wa.me/51943846909?text={whatsapp_message}"
+    whatsapp_url = f"https://wa.me/51943846909?text={whatsapp_message.replace(' ', '%20')}"
     
     return jsonify({"ok":True,"order_id":order.id,"whatsapp_url":whatsapp_url})
 
 @app.route("/checkout", methods=["POST"])
 def checkout_post():
-    # fallback form submit
     cart=get_cart()
     if not cart:
         return redirect(url_for("index"))
@@ -422,7 +393,7 @@ def checkout_post():
     store_id=cart[0].get("store_id")
     total=cart_total(cart)
     order=Order(store_id=store_id,customer_name=nombre,dni=dni,email=email,phone=phone,payment_method=payment,total=total)
-    db_users.session.add(order)
+    db.session.add(order)
     db.session.flush()
     for c in cart:
         oi=OrderItem(order_id=order.id,product_id=c["product_id"],product_name=c["name"],variant_detail=c["variant_detail"],quantity=c["quantity"],unit_price=c["unit_price"],subtotal=c["subtotal"])
@@ -430,25 +401,6 @@ def checkout_post():
     db.session.commit()
     save_cart([])
     return redirect(url_for("compra_exitosa",order_id=order.id))
-
-# ===================== MICROSERVICIOS: COMUNICACIÓN AUTOMÁTICA =====================
-# Microservicio de notificaciones - se comunica con el servicio principal
-# Cuando una orden es nueva, este microservicio envía notificación por WhatsApp
-
-def notificar_nueva_pedido(order_id, customer_name, phone, total, items_summary):
-    """
-    Función para notificar nuevos pedidos mediante WhatsApp.
-    Esta función puede ser llamada por un microservicio separado o como tarea programada.
-    """
-    whatsapp_message = f"🧁 NUEVO PEDIDO #{order_id}\n"
-    whatsapp_message += f"Cliente: {customer_name}\n"
-    whatsapp_message += f"Teléfono: {phone}\n"
-    whatsapp_message += f"Total: S/ {total:.2f}\n"
-    whatsapp_message += f"Productos: {items_summary}\n"
-    whatsapp_message += "Acabo de realizar una reserva de mi compra de tortas en su página web."
-    
-    whatsapp_url = f"https://wa.me/51943846909?text={whatsapp_message.replace(' ', '%20')}"
-    return whatsapp_url
 
 # ===================== ADMIN =====================
 @app.route("/admin/login", methods=["GET","POST"])
@@ -478,11 +430,10 @@ def admin_redirect():
 def admin_dashboard():
     stores=Store.query.all()
     orders=Order.query.filter_by(hidden=False).order_by(Order.created_at.desc()).all()
-    total_sum = db_users.session.query(db_users.func.sum(Order.total)).filter_by(hidden=False).scalar() or 0
+    total_sum = db.session.query(db.func.sum(Order.total)).filter_by(hidden=False).scalar() or 0
     products=Product.query.all()
     return render_template("admin/dashboard.html", stores=stores, orders=orders, total_sum=total_sum, products=products)
 
-# API admin productos
 @app.route("/admin/api/products", methods=["GET"])
 @login_required
 def admin_api_products():
@@ -521,8 +472,8 @@ def admin_create_product():
             stock=int(data.get("stock",100)),
             price_config=json.dumps(data.get("price_config",{}))
         )
-        db_users.session.add(p)
-        db_users.session.commit()
+        db.session.add(p)
+        db.session.commit()
         return jsonify({"ok":True,"product":p.to_dict()})
     except Exception as e:
         return jsonify({"error":str(e)}),500
@@ -543,15 +494,15 @@ def admin_update_product(pid):
         p.price_config=json.dumps(data["price_config"])
     if "is_active" in data:
         p.is_active=bool(data["is_active"])
-    db_users.session.commit()
+    db.session.commit()
     return jsonify({"ok":True,"product":p.to_dict()})
 
 @app.route("/admin/api/product/<int:pid>", methods=["DELETE"])
 @login_required
 def admin_delete_product(pid):
     p=Product.query.get_or_404(pid)
-    db_users.session.delete(p)
-    db_users.session.commit()
+    db.session.delete(p)
+    db.session.commit()
     return jsonify({"ok":True})
 
 @app.route("/admin/api/orders", methods=["GET"])
@@ -560,7 +511,7 @@ def admin_api_orders():
     q=request.args.get("q","").strip().lower()
     query=Order.query.filter_by(hidden=False)
     if q:
-        query=query.filter(db_users.or_(db_users.func.lower(Order.customer_name).like(f"%{q}%"), Order.dni.like(f"%{q}%")))
+        query=query.filter(db.or_(db.func.lower(Order.customer_name).like(f"%{q}%"), Order.dni.like(f"%{q}%")))
     orders=query.order_by(Order.created_at.desc()).all()
     result=[]
     for o in orders:
@@ -574,9 +525,8 @@ def admin_api_orders():
 @app.route("/admin/api/orders/hide", methods=["POST"])
 @login_required
 def admin_hide_history():
-    # borra visualmente (hidden=True) pero no borra BD real
     Order.query.update({Order.hidden: True})
-    db_users.session.commit()
+    db.session.commit()
     return jsonify({"ok":True})
 
 @app.route("/admin/api/orders/<int:oid>/status", methods=["PUT"])
@@ -585,13 +535,12 @@ def admin_update_order_status(oid):
     o=Order.query.get_or_404(oid)
     data=request.get_json()
     o.status=data.get("status",o.status)
-    db_users.session.commit()
+    db.session.commit()
     return jsonify({"ok":True})
 
 # ===================== INIT =====================
 @app.before_request
 def before_first():
-    # ensure tables exist (solo primera vez)
     if not hasattr(app, "_seed_done"):
         with app.app_context():
             try:
@@ -607,7 +556,7 @@ def inject_cart():
 
 if __name__=="__main__":
     with app.app_context():
-        db_users.create_all()
+        db.create_all()
         seed_data()
     port=int(os.getenv("PORT",5000))
     app.run(host="0.0.0.0",port=port,debug=True)
