@@ -4,10 +4,9 @@
 <div class="store-header">
   <img src="{{ store.image_url }}" alt="{{ store.name }}">
   <div>
-    <span class="hero-badge" style="background:var(--miel); color:white">🟢 Abierto ahora</span>
+    <span class="hero-badge" style="background:var(--miel, #C57938); color:white">🟢 Abierto ahora</span>
     <h1>{{ store.name }}</h1>
     <p>📍 {{ store.address }} • 📞 {{ store.phone }}</p>
-    <!-- identificador oculto solo en fuente -->
     <!-- STORE_IDENTIFIER: {{ store.identifier }} -->
     <span style="display:none" data-store-id="{{ store.id }}" data-identifier="{{ store.identifier }}"></span>
     <p style="font-size:13px; color:#5a4a3a; margin-top:6px">Catálogo actualizado en tiempo real • Stock verificado</p>
@@ -51,7 +50,6 @@
   <div class="products-grid" id="grid-postres"></div>
 </div>
 
-<!-- data for JS -->
 <script>
 window.STORE_ID = {{ store.id }};
 window.STORE_SLUG = "{{ store.slug }}";
@@ -62,16 +60,16 @@ window.PRODUCTS = [
   store_id: {{ p.store_id }},
   category: "{{ p.category }}",
   subcategory: "{{ p.subcategory }}",
-  name: "{{ p.name|replace('"','\\\\''') }}",
-  description: "{{ p.description|replace('"','\\\\''') }}",
+  name: "{{ p.name|replace('"','\\"') }}",
+  description: "{{ p.description|replace('"','\\"') }}",
   image_url: "{{ p.image_url }}",
   stock: {{ p.stock }},
-  price_config: {{ p.price_config | safe }},
+  price_config: {{ p.price_config | safe }}
 },
 {% endfor %}
 ];
 </script>
+{% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/tienda.js') }}"></script>
-{% endblock %}
 {% endblock %}

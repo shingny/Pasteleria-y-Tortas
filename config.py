@@ -14,6 +14,9 @@ class Config:
     
     # Database 2: for admin panel (administrative data)
     SQLALCHEMY_DATABASE_URI_ADMIN = os.getenv("DATABASE_URL_ADMIN") or f"mysql+pymysql://admin:{os.getenv('DB_PASSWORD_ADMIN', 'password_admin')}@mysql-sistemawebsanfrancisco987.alwaysdata.net/sistemawebsanfrancisco987_admin"
+
+    # Flask-SQLAlchemy requiere URI por defecto (usamos users como default)
+    SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI_USERS
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ADMIN_USER = os.getenv("ADMIN_USER", "admin")
