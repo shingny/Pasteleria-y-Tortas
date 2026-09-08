@@ -1,56 +1,198 @@
 {% extends "base.html" %}
+{% block title %}Pasarela de pagos - Pastelería y Tortas{% endblock %}
 {% block content %}
 <section class="section">
+  <div class="section-head">
+    <h2>💳 Pasarela de pagos</h2>
+    <p>Completa tus datos, elige cómo pagar y confirma por WhatsApp.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step done">1 • Carrito ✓</div>
+    <div class="step active">2 • Pago</div>
+    <div class="step">3 • WhatsApp</div>
+  </div>
+
   <div class="cart-layout">
+    <form id="checkout-form" class="cart-actions" novalidate>
+      <h3>👤 Tus datos</h3>
+      <p class="form-hint">Escríbelos tal como aparecen en tu DNI para preparar tu pedido sin errores.</p>
+      <div class="form-group">
+        <label for="f-nombre">Nombre y apellidos</label>
+        <input type="text" id="f-nombre" name="nombre" required placeholder="Ej: María López Quispe" autocomplete="name">
+        <small>¿A nombre de quién preparamos el pedido?</small>
+      </div>
+      <div class="form-group">
+        <label for="f-dni">DNI</label>
+        <input type="text" id="f-dni" name="dni" required pattern="\d{8}" maxlength="8" placeholder="8 dígitos, ej: 12345678" inputmode="numeric">
+        <small>Solo números, 8 dígitos.</small>
+      </div>
+      <div class="form-group">
+        <label for="f-email">Correo electrónico</label>
+        <input type="email" id="f-email" name="email" required placeholder="tucorreo@ejemplo.com" autocomplete="email">
+        <small>Te enviamos el comprobante aquí.</small>
+      </div>
+      <div class="form-group">
+        <label for="f-phone">Número celular (WhatsApp)</label>
+        <input type="text" id="phone-input" name="phone" required pattern="9[0-9]{8}" maxlength="9" minlength="9" placeholder="9XXXXXXXX" inputmode="numeric" title="Debe tener 9 dígitos y empezar con 9">
+        <small>9 dígitos y empieza con 9 (ej: 943846909).</small>
+      </div>
+
+      <h3 style="margin-top:22px">💰 Elige tu medio de pago</h3>
+      <p class="form-hint">Toca una opción para ver a dónde pagar. Yape y Plin usan el <strong>{{ yape_number }}</strong>.</p>
+      <div class="payment-options">
+        <label class="pay-option"><input type="radio" name="payment_method" value="yape" checked><span><strong>💜 Yape</strong> <span class="pay-num">{{ payment_accounts['yape']['number'] }}</span><br><small>Titular: {{ payment_accounts['yape']['holder'] }}</small></span></label>
+        <label class="pay-option"><input type="radio" name="payment_method" value="plin"><span><strong>💙 Plin</strong> <span class="pay-num">{{ payment_accounts['plin']['number'] }}</span><br><small>Titular: {{ payment_accounts['plin']['holder'] }}</small></span></label>
+        <label class="pay-option"><input type="radio" name="payment_method" value="bcp"><span><strong>🏦 Tarjeta / BCP</strong> <span class="pay-num">{{ payment_accounts['bcp']['number'] }}</span><br><small>{{ payment_accounts['bcp']['holder'] }}</small></span></label>
+        <label class="pay-option"><input type="radio" name="payment_method" value="scotiabank"><span><strong>🏦 Scotiabank</strong> <span class="pay-num">{{ payment_accounts['scotiabank']['number'] }}</span><br><small>{{ payment_accounts['scotiabank']['holder'] }}</small></span></label>
+        <label class="pay-option"><input type="radio" name="payment_method" value="bbva"><span><strong>🏦 BBVA</strong> <span class="pay-num">{{ payment_accounts['bbva']['number'] }}</span><br><small>{{ payment_accounts['bbva']['holder'] }}</small></span></label>
+      </div>
+
+      <div id="pay-detail" class="pay-detail"></div>
+
+      <div id="card-fields" style="display:none; margin-top:10px" class="form-group">
+        <label>Número de tarjeta (simulado)</label>
+        <input type="text" id="card-num" placeholder="4111 1111 1111 1111" inputmode="numeric">
+        <div style="display:flex; gap:10px; margin-top:8px"><label style="flex:1">MM/AA<input type="text" placeholder="12/30"></label><label style="flex:1">CVV<input type="text" placeholder="123"></label></div>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:22px; flex-wrap:wrap">
+        <a href="{{ url_for('carrito') }}" class="btn btn-secondary" style="flex:1; text-align:center">← Volver al carrito</a>
+        <button type="button" id="btn-pay" class="btn btn-primary" style="flex:1">Realizar pago →</button>
+      </div>
+      <div id="confirm-wrap" style="display:none; margin-top:14px; background:#E6F7F7; border:1.5px solid #17A2A0; border-radius:14px; padding:14px">
+        <p style="font-size:14px; color:var(--café-intenso)"><strong>✅ ¡Pago listo para confirmar!</strong><br>Ya hiciste el Yape, Plin o depósito. Ahora confirma para enviarnos tu voucher por WhatsApp.</p>
+        <button type="button" id="btn-confirm" class="btn btn-primary btn-block" style="margin-top:10px; background:#25D366">📲 Confirmar pago por WhatsApp ({{ whatsapp_number }})</button>
+      </div>
+    </form>
+
     <div class="cart-summary">
-      <h3>Resumen de compra</h3>
-      {% if cart %}
-        {% for item in cart %}
-          <div class="cart-item">
-            <img src="{{ item.image_url }}" alt="{{ item.name }}">
-            <div class="cart-info">
-              <h4>{{ item.name }}</h4>
-              <p class="variant">{{ item.variant_detail }}</p>
-              <div class="cantidad">
-                Cantidad: {{ item.quantity }}
-              </div>
-            </div>
-            <span class="price">S/ {{ item.unit_price|round(2) }}</span>
-          </div>
-        {% endfor %}
-        <div class="cart-subtotal" style="margin-top:1rem; padding-top:1rem; border-top:1px solid #e8e0d8;">
-          <span>Subtotal:</span> <strong>S/ {{ total|round(2) }}</strong>
+      <h3>🧾 Resumen de tu compra</h3>
+      <p class="form-hint">Tienda única: {{ cart[0].store_name if cart else 'Pastelería y Tortas' }}</p>
+      {% for item in cart %}
+      <div class="cart-item" style="margin-bottom:8px">
+        <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width:48px; height:48px">
+        <div class="cart-info">
+          <h4>{{ item.name }}</h4>
+          <p class="variant">{{ item.variant_detail }} x{{ item.quantity }}</p>
         </div>
-      {% else %}
-        <div class="empty-cart">
-          <h3>Tu carrito está vacío</h3>
-          <p>Añade productos desde la tienda.</p>
-        </div>
-      {% endif %}
-    </div>
-    
-    <div class="cart-actions">
-      <h3>Datos para el pedido</h3>
-      <form id="checkout-data">
-        <div class="form-group">
-          <label>Nombre completo</label>
-          <input type="text" name="nombre" required>
-        </div>
-        <div class="form-group">
-          <label>DNI</label>
-          <input type="text" name="dni" required pattern="^\d{8}$" placeholder="12345678">
-        </div>
-        <div class="form-group">
-          <label>Teléfono (9 dígitos)</label>
-          <input type="tel" name="phone" required pattern="^9\d{8}$" placeholder="943846909">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" name="email" required>
-        </div>
-        <button type="submit" class="btn btn-checkock">Confirmar Pedido</button>
-      </form>
+        <span class="cart-subtotal">S/ {{ '%.2f'|format(item.subtotal) }}</span>
+      </div>
+      {% endfor %}
+      <div class="cart-subtotal" style="margin-top:1rem; padding-top:1rem; border-top:1px solid #e8e0d8;">
+        <span>Monto total:</span> <strong id="checkout-total">S/ {{ '%.2f'|format(total) }}</strong>
+      </div>
+      <p style="font-size:12px; color:#6D3C1C; margin-top:10px">✅ Compra segura • Guarda tu baucher, Yape, Plin o depósito</p>
+      <div class="pay-detail">
+        <p style="font-size:13px"><strong>📍 Recojo:</strong> Av. Huancavelica N° 123, Huancayo</p>
+        <p style="font-size:12px; color:#666">Recoge en tienda o pide delivery al confirmar por WhatsApp.</p>
+      </div>
     </div>
   </div>
 </section>
+<div id="toast" class="toast"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+const ACCOUNTS = {{ payment_accounts | tojson }};
+const TOTAL = {{ total }};
+let paidReady = false;
+let lastPayload = null;
+
+function currentMethod(){
+  const r = document.querySelector('input[name="payment_method"]:checked');
+  return r ? r.value : 'yape';
+}
+function renderPayDetail(){
+  const m = currentMethod();
+  const box = document.getElementById('pay-detail');
+  const card = document.getElementById('card-fields');
+  const acc = ACCOUNTS[m] || ACCOUNTS['yape'];
+  if(m === 'bcp' || m === 'scotiabank' || m === 'bbva'){
+    card.style.display = 'block';
+    box.innerHTML = 'Paga <strong>S/ ' + TOTAL.toFixed(2) + '</strong> a <strong>' + acc.label + ' ' + acc.number + '</strong><br><small>Titular: ' + acc.holder + '. Luego pulsa <strong>Realizar pago</strong>.</small>';
+  } else {
+    card.style.display = 'none';
+    box.innerHTML = 'Paga <strong>S/ ' + TOTAL.toFixed(2) + '</strong> al <strong>' + acc.label + ' ' + acc.number + '</strong><br><small>Titular: ' + acc.holder + '. Luego pulsa <strong>Realizar pago</strong>.</small>';
+  }
+  paidReady = false;
+  document.getElementById('confirm-wrap').style.display = 'none';
+}
+document.querySelectorAll('input[name="payment_method"]').forEach(r => r.addEventListener('change', renderPayDetail));
+
+const phoneInput = document.getElementById('phone-input');
+if(phoneInput){
+  phoneInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g,'').slice(0,9);
+  });
+}
+const dniInput = document.getElementById('f-dni');
+if(dniInput){
+  dniInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g,'').slice(0,8);
+  });
+}
+
+function showToast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => { t.className = 'toast'; }, 4000);
+}
+
+function collectPayload(){
+  const fd = new FormData(document.getElementById('checkout-form'));
+  return {
+    nombre: (fd.get('nombre') || '').trim(),
+    dni: (fd.get('dni') || '').trim(),
+    email: (fd.get('email') || '').trim(),
+    phone: (fd.get('phone') || '').trim(),
+    payment_method: fd.get('payment_method') || 'yape'
+  };
+}
+function validPayload(p){
+  if(!p.nombre || !p.dni || !p.email || !p.phone){ showToast('Completa todos tus datos por favor', 'error'); return false; }
+  if(!/^\d{8}$/.test(p.dni)){ showToast('DNI inválido: debe tener 8 dígitos', 'error'); return false; }
+  if(!/^9\d{8}$/.test(p.phone)){ showToast('Celular inválido: debe tener 9 dígitos y empezar con 9', 'error'); return false; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(p.email)){ showToast('Correo inválido', 'error'); return false; }
+  return true;
+}
+
+document.getElementById('btn-pay').addEventListener('click', () => {
+  const p = collectPayload();
+  if(!validPayload(p)) return;
+  lastPayload = p;
+  paidReady = true;
+  document.getElementById('confirm-wrap').style.display = 'block';
+  showToast('Pago registrado. Ahora pulsa Confirmar pago');
+  document.getElementById('confirm-wrap').scrollIntoView({behavior:'smooth', block:'center'});
+});
+
+document.getElementById('btn-confirm').addEventListener('click', async () => {
+  if(!paidReady || !lastPayload){ showToast('Primero pulsa Realizar pago', 'error'); return; }
+  const btn = document.getElementById('btn-confirm');
+  btn.disabled = true;
+  btn.textContent = 'Procesando...';
+  try{
+    const res = await fetch('/api/checkout', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(lastPayload)});
+    const data = await res.json();
+    if(data.ok){
+      showToast('¡Pago confirmado! Abriendo WhatsApp...');
+      setTimeout(() => {
+        window.open(data.whatsapp_url, '_blank');
+        window.location.href = '/compra-exitosa/' + data.order_id;
+      }, 800);
+    } else {
+      showToast(data.error || 'Error al procesar pago', 'error');
+      btn.disabled = false;
+      btn.textContent = '📲 Confirmar pago por WhatsApp ({{ whatsapp_number }})';
+    }
+  }catch(e){
+    showToast('Error de conexión', 'error');
+    btn.disabled = false;
+  }
+});
+
+renderPayDetail();
+</script>
 {% endblock %}

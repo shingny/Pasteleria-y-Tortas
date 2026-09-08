@@ -4,15 +4,23 @@
 <div class="admin-login">
   <div class="login-card">
     <h2>🔐 Panel Administrador</h2>
-    <p style="color:#6a5a50; font-size:14px">Ingresa credenciales para acceder al panel de control.</p>
+    <p style="color:#6a5a50; font-size:14px">Bienvenido. Ingresa tus credenciales para gestionar tu tienda única, pedidos y catálogo.</p>
     <form method="POST" style="margin-top:18px">
-      <label>Usuario<input type="text" name="username" required placeholder="admin" value="admin"></label>
-      <label>Contraseña<input type="password" name="password" required placeholder="••••••••" value="Pasteleria2026"></label>
-      <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px">Ingresar</button>
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" name="username" required placeholder="Ej: admin" value="admin" autocomplete="username">
+        <small>Tu usuario de administrador.</small>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" name="password" required placeholder="••••••••" value="Pasteleria2026" autocomplete="current-password">
+        <small>Mínimo 8 caracteres. No la compartas.</small>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit" style="margin-top:16px">Ingresar al panel →</button>
     </form>
-    <div style="margin-top:14px; background:rgba(231,193,150,0.1); border:1px solid var(--miel); border-radius:10px; padding:10px; font-size:13px">
-      <p><strong>Demo:</strong> admin / Pasteleria2026</p>
-      <p style="margin-top:4px; color:#5a4a3a">Identificadores de tienda disponibles en el panel.</p>
+    <div class="form-hint" style="margin-top:14px">
+      <p><strong>Tienda única:</strong> Pastelería y Tortas • Identificador <strong>PT-UNICA-2026-A7X9</strong></p>
+      <p style="margin-top:4px">Yape/Plin 930519994 • WhatsApp 943846909</p>
     </div>
   </div>
 </div>

@@ -216,15 +216,21 @@ async function addToCart(productId){
   });
   const data = await res.json();
   if(data.ok){
-    showToast('✅ Agregado al carrito');
+    showToast('Fue agregado a su carrito');
     const cnt = document.getElementById('cart-count');
     if(cnt) cnt.textContent = data.count;
-    if(window.refreshCartBadge) refreshCartBadge();
+    if(typeof refreshCartBadge === 'function'){
+      try{ refreshCartBadge(); }catch(e){}
+    } else {
+      const badge = document.getElementById('cart-badge');
+      if(badge) badge.textContent = data.count;
+    }
   } else {
     showToast(data.error||'Error','error');
   }
 }
 
+let _toastTimer = null;
 function showToast(msg, type){
   let t = document.getElementById('toast');
   if(!t){
@@ -234,7 +240,8 @@ function showToast(msg, type){
   }
   t.textContent = msg;
   t.className = 'toast show '+(type||'');
-  setTimeout(()=>t.className='toast',2500);
+  if(_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>{ t.className='toast'; }, 4000);
 }
 
 function renderCurrent(){

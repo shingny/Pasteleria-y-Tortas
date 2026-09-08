@@ -2,12 +2,12 @@
 {% block content %}
 <section class="hero">
   <div class="hero-text">
-    <span class="hero-badge">Desde 2026 • Tradición familiar</span>
+    <span class="hero-badge">Desde 2026 • Nuestra única tienda</span>
     <h1>El sabor de casa,<br> <span>ahora a un clic</span></h1>
-    <p>5 tiendas, un mismo sabor. Elige tu tienda más cercana y disfruta de tortas, postres y bocaditos hechos con receta tradicional.</p>
+    <p>Una sola tienda, un mismo sabor de siempre. Compra tortas, bocaditos y postres artesanales con entrega rápida.</p>
     <div class="hero-actions">
-      <a href="#tiendas" class="btn btn-primary">Ver tiendas ↓</a>
-      <span class="hero-note">🕒 Todas abiertas 8am — 9pm</span>
+      <a href="#tienda" class="btn btn-primary">Ver nuestra tienda ↓</a>
+      <span class="hero-note">🕒 Abierta hoy 8am — 9pm</span>
     </div>
   </div>
   <div class="hero-img">
@@ -19,12 +19,12 @@
   </div>
 </section>
 
-<section id="tiendas" class="section">
+<section id="tienda" class="section">
   <div class="section-head">
-    <h2>Nuestras 5 tiendas</h2>
-    <p>Selecciona tu tienda favorita. Cada tienda tiene su propio catálogo y stock en tiempo real.</p>
+    <h2>Nuestra tienda</h2>
+    <p>Compra directa, sin sucursales. Catálogo y stock en tiempo real.</p>
   </div>
-  <div class="stores-grid">
+  <div class="stores-grid" style="grid-template-columns:1fr; max-width:720px; margin:0 auto">
     {% for s in stores %}
     <article class="store-card">
       <div class="store-img">
@@ -34,11 +34,10 @@
       <div class="store-body">
         <h3>{{ s.name }}</h3>
         <p class="store-addr">📍 {{ s.address }}</p>
-        <p class="store-phone">📞 {{ s.phone }}</p>
-        <!-- identificador oculto solo en código (data-attribute + comentario) -->
+        <p class="store-phone">📞 WhatsApp {{ s.phone }} • Yape/Plin {{ yape_number }}</p>
         <!-- STORE_IDENTIFIER: {{ s.identifier }} -->
         <span class="hidden-identifier" data-identifier="{{ s.identifier }}" style="display:none">{{ s.identifier }}</span>
-        <a href="{{ url_for('tienda', slug=s.slug) }}" class="btn btn-primary btn-block">Entrar a la tienda →</a>
+        <a href="{{ url_for('tienda', slug=s.slug) }}" class="btn btn-primary btn-block">Entrar y comprar →</a>
         <p class="store-meta">Listo para recojo • Delivery disponible</p>
       </div>
     </article>
@@ -46,10 +45,22 @@
   </div>
 </section>
 
+<section class="section">
+  <div class="store-card" style="max-width:720px; margin:0 auto; padding:1.5rem">
+    <h3 style="color:var(--café-intenso)">¿Cómo comprar?</h3>
+    <ol style="font-size:14px; color:#5a4a3a; margin-top:8px; padding-left:18px">
+      <li>Elige tus tortas, bocaditos y postres y pulsa <strong>Agregar al carrito</strong>.</li>
+      <li>En el carrito ajusta cantidades con <strong>+ / −</strong> y pulsa <strong>Confirmar pedido</strong>.</li>
+      <li>Elige Yape, Plin o tarjeta, pulsa <strong>Realizar pago</strong> y luego <strong>Confirmar pago</strong> por WhatsApp.</li>
+    </ol>
+    <p style="font-size:13px; margin-top:10px">💜 Yape/Plin: <strong>{{ yape_number }}</strong> • WhatsApp: <strong>943846909</strong></p>
+  </div>
+</section>
+
 <section class="features">
   <div class="feat"><span>🚚</span><h4>Delivery rápido</h4><p>Entrega en 45–60 min</p></div>
   <div class="feat"><span>🎂</span><h4>Personalizable</h4><p>Elige tamaño, sabor y cantidad</p></div>
-  <div class="feat"><span>🛒</span><h4>Carrito inteligente</h4><p>Guardado automático</p></div>
-  <div class="feat"><span>💳</span><h4>Pago flexible</h4><p>Yape, Tarjeta o Contra entrega</p></div>
+  <div class="feat"><span>🛒</span><h4>Carrito inteligente</h4><p>Aumenta o disminuye cantidades</p></div>
+  <div class="feat"><span>💳</span><h4>Pago flexible</h4><p>Yape, Plin, BCP, Scotiabank, BBVA</p></div>
 </section>
 {% endblock %}

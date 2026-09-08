@@ -875,3 +875,28 @@ html,body{max-width:100%; overflow-x:hidden}
     font-size:1.8rem;
   }
 }
+
+/* ===== Formularios amigables (misma paleta vainilla/miel) ===== */
+.form-group{margin-top:14px}
+.form-group label{display:block; font-size:13px; font-weight:600; color:var(--café-intenso)}
+.form-group small{display:block; font-weight:400; color:#8B5A2B; font-size:12px; margin-top:4px}
+.form-group input,.form-group select,.form-group textarea,.cart-actions input,.cart-actions select,.cart-actions textarea{width:100%; padding:12px 14px; border:1.5px solid #e8e0d8; border-radius:12px; margin-top:6px; background:#FFFEFB; font-size:14px; font-family:inherit; transition:border-color .15s, box-shadow .15s; color:var(--café-intenso)}
+.form-group input:focus,.cart-actions input:focus{outline:none; border-color:var(--miel); background:white; box-shadow:0 0 0 3px rgba(197,121,56,0.15)}
+.form-group input::placeholder{color:#B9A795}
+.form-hint{font-size:12.5px; color:#6D3C1C; background:#FFF8EF; border:1px dashed var(--miel); border-radius:10px; padding:8px 12px; margin:8px 0 4px}
+.payment-options{margin-top:6px}
+.pay-option{display:flex; gap:12px; align-items:flex-start; border:1.5px solid #FFE0B2; padding:14px; border-radius:14px; margin-top:10px; cursor:pointer; background:#FFFEFB; transition:.15s}
+.pay-option:hover{border-color:var(--miel); transform:translateY(-1px)}
+.pay-option:has(input:checked){border-color:var(--miel); background:#FFF8EF; box-shadow:0 2px 10px rgba(197,121,56,0.18)}
+.pay-option input{margin-top:4px; accent-color:var(--miel); width:18px; height:18px}
+.pay-num{font-weight:800; color:var(--café-intenso); background:white; padding:2px 8px; border-radius:8px; border:1px dashed var(--miel); display:inline-block; margin-top:4px}
+.pay-detail{background:#FFF8EF; border:1.5px dashed var(--miel); border-radius:14px; padding:14px; margin-top:12px; font-size:13px; color:var(--café-intenso)}
+.steps{display:flex; gap:8px; margin-bottom:16px}
+.step{flex:1; text-align:center; font-size:12px; font-weight:700; color:#B9A795; background:white; border:1px solid #FFE0B2; padding:8px; border-radius:12px}
+.step.active{color:white; background:var(--café-intenso); border-color:var(--café-intenso)}
+.step.done{color:var(--café-intenso); background:#FFF8EF; border-color:var(--miel)}
+.toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--café-intenso); color:white; padding:14px 22px; border-radius:16px; opacity:0; pointer-events:none; transition:.3s; z-index:300; font-weight:600; box-shadow:0 8px 24px rgba(56,36,23,0.3); max-width:90vw; text-align:center}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.toast.error{background:#c0392b}
+.btn-block{width:100%; text-align:center; display:block}
+.qty{font-weight:800; min-width:22px; text-align:center; color:var(--café-intenso)}

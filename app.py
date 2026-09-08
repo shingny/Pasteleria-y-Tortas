@@ -129,6 +129,45 @@ def save_cart(cart):
 def cart_total(cart):
     return round(sum(float(i.get("subtotal",0)) for i in cart),2)
 
+# ===================== TIENDA ÚNICA =====================
+# Datos centralizados de la única tienda (se mantiene la paleta vainilla/miel del CSS)
+SINGLE_STORE = {
+    "name": "Pastelería y Tortas",
+    "slug": "pasteleria-y-tortas",
+    "address": "Av. Huancavelica N° 123, Huancayo",
+    "identifier": "PT-UNICA-2026-A7X9",
+    "image_url": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600",
+    "phone": "943846909",
+    "is_open": True,
+}
+# Contactos / pagos oficiales tienda única
+YAPE_PLIN_NUMBER = "930519994"
+WHATSAPP_NUMBER = "943846909"  # sin +51 para wa.me se usa 51943846909
+PAYMENT_ACCOUNTS = {
+    "yape": {"label": "Yape", "number": "930519994", "holder": "Pastelería y Tortas"},
+    "plin": {"label": "Plin", "number": "930519994", "holder": "Pastelería y Tortas"},
+    "bcp": {"label": "BCP", "number": "4557 8800 1234 5678", "holder": "Pastelería y Tortas S.A.C."},
+    "scotiabank": {"label": "Scotiabank", "number": "4999 0123 4567 8901", "holder": "Pastelería y Tortas S.A.C."},
+    "bbva": {"label": "BBVA", "number": "4111 0022 3344 5566", "holder": "Pastelería y Tortas S.A.C."},
+}
+
+def _seed_catalog_for_store(store, add_product):
+    add_product(store,"tortas","queque","Torta de Queque","Bizcocho esponjoso tradicional, ideal para cumpleaños.","https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500",80, {"type":"size","prices":{"pequeño":25,"mediano":35,"grande":45}})
+    add_product(store,"tortas","selva_negra","Torta Selva Negra","Clásica selva negra con cerezas y crema chantilly.","https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=500",60, {"type":"size_flavor","prices":{"pequeño":30,"mediano":40,"grande":50},"flavors":["vainilla","moca"]})
+    add_product(store,"tortas","tres_leches","Torta Tres Leches Clásica","Húmeda y cremosa tres leches tradicional.","https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=500",60, {"type":"size_flavor","prices":{"pequeño":30,"mediano":40,"grande":50},"flavors":["moca","vainilla"]})
+    for sabor in ["maracuyá","fresa","lúcuma","mango","coco","café"]:
+        add_product(store,"tortas","tres_leches_especial",f"Torta 3 Leches - {sabor.capitalize()}","Tres leches especial sabor "+sabor+", tamaño grande.", "https://images.unsplash.com/photo-1542826438-bd32f43d626f?w=500",40, {"type":"fixed_size_especial","price":60,"flavor":sabor,"size":"grande"})
+    for b in ["queso","jamón","orejitas","conito","alfajorcito","bizcotela"]:
+        add_product(store,"bocaditos","bocadito_clasico",f"Bocadito de {b.capitalize()}","Bocaditos dulces/salados perfectos para mesas.","https://images.unsplash.com/photo-1551024506-0bccd828d307?w=500",200, {"type":"bocadito_clasico","name":b})
+    for emp in ["carne","pollo"]:
+        add_product(store,"bocaditos","empanada",f"Empanada de {emp.capitalize()}","Empanada horneada jugosa.","https://images.unsplash.com/photo-1608198093002-ad4e005484ec?w=500",150, {"type":"bocadito_empanada","name":emp})
+    for sabor in ["fresa","clásica (vainilla)","maracuyá","limón","moca/café","mango","coco","lúcuma"]:
+        add_product(store,"postres","postre_tres_leches",f"Postre 3 Leches - {sabor.capitalize()}","Vasito individual 3 leches.","https://images.unsplash.com/photo-1488477181946-64290103bb53?w=500",100, {"type":"fixed","price":6,"flavor":sabor})
+    for sabor in ["selva negra","chocolate"]:
+        add_product(store,"postres","postre_queque",f"Postre Queque - {sabor.capitalize()}","Porción de queque de chocolate.","https://images.unsplash.com/photo-1559620192-032c4bc4674e?w=500",100, {"type":"fixed","price":6,"flavor":sabor})
+    for sabor in ["torta helada clásica","helada de oreo"]:
+        add_product(store,"postres","postre_helada",f"Postre Helado - {sabor.capitalize()}","Postre frío de chocolate.","https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500",100, {"type":"fixed","price":4.5,"flavor":sabor})
+
 def seed_data():
     # no crea app_context aquí; el caller lo hace
     try:
@@ -136,60 +175,65 @@ def seed_data():
     except Exception as e:
         print(f"[seed] create_all error: {e}")
         traceback.print_exc()
-        # no retornar, intentar continuar
     try:
-        if Store.query.first() and Product.query.first():
-            return
+        main = Store.query.filter_by(slug=SINGLE_STORE["slug"]).first()
     except Exception as e:
         print(f"[seed] query check error (probable tablas no existen): {e}")
-        # intentar create_all de nuevo por bind
         try:
             db.create_all(bind_key="users")
             print("[seed] create_all(bind=users) reintentado")
         except Exception as e2:
             print(f"[seed] segundo intento falló: {e2}")
             return
-    stores_data = [
-        {"name":"Pastelería Tortas Perú - Centro","slug":"centro","address":"Av. Principal N°123","identifier":"PT-CENTRO-2026-A7X9","image_url":"https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600"},
-        {"name":"Pastelería Tortas Perú - Miraflores","slug":"miraflores","address":"Jirón de la Selva N°456","identifier":"PT-MIRA-2026-B3K1","image_url":"https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600"},
-        {"name":"Pastelería Tortas Perú - Surco","slug":"surco","address":"Av. Industriales N°789","identifier":"PT-SURCO-2026-C8M2","image_url":"https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600"},
-        {"name":"Pastelería Tortas Perú - Gamarra","slug":"gamarra","address":"Jirón Real N°3444","identifier":"PT-GAMARRA-2026-D4N5","image_url":"https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600"},
-        {"name":"Pastelería Tortas Perú - San Juan","slug":"san-juan","address":"Regional, Los Pasajes N°4145","identifier":"PT-SANJUAN-2026-E9P6","image_url":"https://images.unsplash.com/photo-1571115177098-8ed21de65d8e?w=600"},
-    ]
-    existing_slugs = {s.slug for s in Store.query.all()} if Store.query.first() is not None else set()
-    # si falló el query, existing_slugs vacío y se crearán
+        main = None
     try:
-        existing_slugs = {s.slug for s in Store.query.all()}
-    except:
-        existing_slugs = set()
-    for sd in stores_data:
-        if sd["slug"] not in existing_slugs:
-            db.session.add(Store(**sd))
-    db.session.commit()
-    stores = Store.query.all()
-    def add_product(store, category, subcategory, name, desc, img, stock, cfg):
-        db.session.add(Product(store_id=store.id, category=category, subcategory=subcategory, name=name, description=desc, image_url=img, stock=stock, price_config=json.dumps(cfg)))
-    for store in stores:
-        # evitar duplicar si ya hay productos para esa tienda
-        if Product.query.filter_by(store_id=store.id).first():
-            continue
-        add_product(store,"tortas","queque","Torta de Queque","Bizcocho esponjoso tradicional, ideal para cumpleaños.","https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500",80, {"type":"size","prices":{"pequeño":25,"mediano":35,"grande":45}})
-        add_product(store,"tortas","selva_negra","Torta Selva Negra","Clásica selva negra con cerezas y crema chantilly.","https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=500",60, {"type":"size_flavor","prices":{"pequeño":30,"mediano":40,"grande":50},"flavors":["vainilla","moca"]})
-        add_product(store,"tortas","tres_leches","Torta Tres Leches Clásica","Húmeda y cremosa tres leches tradicional.","https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=500",60, {"type":"size_flavor","prices":{"pequeño":30,"mediano":40,"grande":50},"flavors":["moca","vainilla"]})
-        for sabor in ["maracuyá","fresa","lúcuma","mango","coco","café"]:
-            add_product(store,"tortas","tres_leches_especial",f"Torta 3 Leches - {sabor.capitalize()}","Tres leches especial sabor "+sabor+", tamaño grande.", "https://images.unsplash.com/photo-1542826438-bd32f43d626f?w=500",40, {"type":"fixed_size_especial","price":60,"flavor":sabor,"size":"grande"})
-        for b in ["queso","jamón","orejitas","conito","alfajorcito","bizcotela"]:
-            add_product(store,"bocaditos","bocadito_clasico",f"Bocadito de {b.capitalize()}","Bocaditos dulces/salados perfectos para mesas.","https://images.unsplash.com/photo-1551024506-0bccd828d307?w=500",200, {"type":"bocadito_clasico","name":b})
-        for emp in ["carne","pollo"]:
-            add_product(store,"bocaditos","empanada",f"Empanada de {emp.capitalize()}","Empanada horneada jugosa.","https://images.unsplash.com/photo-1608198093002-ad4e005484ec?w=500",150, {"type":"bocadito_empanada","name":emp})
-        for sabor in ["fresa","clásica (vainilla)","maracuyá","limón","moca/café","mango","coco","lúcuma"]:
-            add_product(store,"postres","postre_tres_leches",f"Postre 3 Leches - {sabor.capitalize()}","Vasito individual 3 leches.","https://images.unsplash.com/photo-1488477181946-64290103bb53?w=500",100, {"type":"fixed","price":6,"flavor":sabor})
-        for sabor in ["selva negra","chocolate"]:
-            add_product(store,"postres","postre_queque",f"Postre Queque - {sabor.capitalize()}","Porción de queque de chocolate.","https://images.unsplash.com/photo-1559620192-032c4bc4674e?w=500",100, {"type":"fixed","price":6,"flavor":sabor})
-        for sabor in ["torta helada clásica","helada de oreo"]:
-            add_product(store,"postres","postre_helada",f"Postre Helado - {sabor.capitalize()}","Postre frío de chocolate.","https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500",100, {"type":"fixed","price":4.5,"flavor":sabor})
-    db.session.commit()
-    print("[seed] completado con 5 tiendas y catálogo")
+        if main is None:
+            # reutilizar la primera tienda existente como principal para no perder IDs
+            first = Store.query.first()
+            if first:
+                main = first
+                main.name = SINGLE_STORE["name"]
+                main.slug = SINGLE_STORE["slug"]
+                main.address = SINGLE_STORE["address"]
+                main.identifier = SINGLE_STORE["identifier"]
+                main.image_url = SINGLE_STORE["image_url"]
+                main.phone = SINGLE_STORE["phone"]
+                main.is_open = True
+            else:
+                main = Store(**SINGLE_STORE)
+                db.session.add(main)
+            db.session.commit()
+        else:
+            main.name = SINGLE_STORE["name"]
+            main.address = SINGLE_STORE["address"]
+            main.identifier = SINGLE_STORE["identifier"]
+            main.image_url = SINGLE_STORE["image_url"]
+            main.phone = SINGLE_STORE["phone"]
+            main.is_open = True
+            db.session.commit()
+        # reasignar productos/pedidos huérfanos a la tienda principal y borrar sobrantes
+        for s in Store.query.all():
+            if s.id != main.id:
+                Product.query.filter_by(store_id=s.id).update({Product.store_id: main.id})
+                Order.query.filter_by(store_id=s.id).update({Order.store_id: main.id})
+                db.session.commit()
+                db.session.delete(s)
+        db.session.commit()
+        main = Store.query.get(main.id)
+        def add_product(store, category, subcategory, name, desc, img, stock, cfg):
+            db.session.add(Product(store_id=store.id, category=category, subcategory=subcategory, name=name, description=desc, image_url=img, stock=stock, price_config=json.dumps(cfg)))
+        # solo crear catálogo si la tienda principal no tiene productos
+        if not Product.query.filter_by(store_id=main.id).first():
+            _seed_catalog_for_store(main, add_product)
+        db.session.commit()
+        print("[seed] completado con tienda única y catálogo")
+    except Exception as e:
+        print(f"[seed] error inesperado: {e}")
+        traceback.print_exc()
+        try:
+            db.session.rollback()
+        except:
+            pass
 
 # ===================== RUTAS =====================
 @app.route("/health")
@@ -205,11 +249,20 @@ def health():
 @app.route("/")
 def index():
     stores = Store.query.all()
-    return render_template("index.html", stores=stores)
+    return render_template("index.html", stores=stores,
+                           yape_number=YAPE_PLIN_NUMBER,
+                           whatsapp_number=WHATSAPP_NUMBER,
+                           payment_accounts=PAYMENT_ACCOUNTS)
 
 @app.route("/tienda/<slug>")
 def tienda(slug):
-    store = Store.query.filter_by(slug=slug).first_or_404()
+    store = Store.query.filter_by(slug=slug).first()
+    if not store:
+        # tienda única: slugs antiguos redirigen a la tienda principal
+        main = Store.query.first()
+        if main:
+            return redirect(url_for("tienda", slug=main.slug))
+        abort(404)
     products = Product.query.filter_by(store_id=store.id, is_active=True).all()
     grouped = {"tortas":[],"bocaditos":[],"postres":[]}
     for p in products:
@@ -229,12 +282,21 @@ def checkout_page():
         flash("Tu carrito está vacío","warning")
         return redirect(url_for("index"))
     total = cart_total(cart)
-    return render_template("checkout.html", cart=cart, total=total)
+    return render_template("checkout.html", cart=cart, total=total,
+                           yape_number=YAPE_PLIN_NUMBER,
+                           whatsapp_number=WHATSAPP_NUMBER,
+                           payment_accounts=PAYMENT_ACCOUNTS)
 
 @app.route("/compra-exitosa/<int:order_id>")
 def compra_exitosa(order_id):
     order = Order.query.get_or_404(order_id)
-    return render_template("exito.html", order=order)
+    from urllib.parse import quote as _quote
+    base_msg = "Realice una compra de torta en su pagina, aqui le adjunto el baucher, yape, plin, deposito"
+    detail = f"{base_msg} | Pedido #{order.id} | Total S/ {order.total:.2f} | Pago: {order.payment_method} | Cliente: {order.customer_name}"
+    wa_url = f"https://wa.me/51{WHATSAPP_NUMBER}?text={_quote(detail)}"
+    return render_template("exito.html", order=order, whatsapp_url=wa_url,
+                           whatsapp_number=WHATSAPP_NUMBER,
+                           payment_accounts=PAYMENT_ACCOUNTS)
 
 # ===================== API CART =====================
 @app.route("/api/cart/add", methods=["POST"])
@@ -329,22 +391,33 @@ def api_cart_clear():
 
 @app.route("/api/checkout", methods=["POST"])
 def api_checkout():
-    data=request.get_json()
+    from urllib.parse import quote as _quote
+    data=request.get_json() or {}
     cart=get_cart()
     if not cart:
         return jsonify({"error":"Carrito vacío"}),400
-    nombre=data.get("nombre","").strip()
-    dni=data.get("dni","").strip()
-    email=data.get("email","").strip()
-    phone=data.get("phone","").strip()
-    payment=data.get("payment_method","yape")
+    nombre=(data.get("nombre") or "").strip()
+    dni=(data.get("dni") or "").strip()
+    email=(data.get("email") or "").strip()
+    phone=(data.get("phone") or "").strip()
+    payment=(data.get("payment_method") or "yape").strip().lower()
+    allowed = {"yape", "plin", "bcp", "scotiabank", "bbva", "tarjeta"}
+    if payment not in allowed:
+        payment = "yape"
     if not all([nombre,dni,email,phone]):
         return jsonify({"error":"Faltan datos del cliente"}),400
     if not re.match(r'^9\d{8}$', phone):
         return jsonify({"error":"Celular inválido: debe tener 9 dígitos y empezar con 9"}),400
     if not re.match(r'^\d{8}$', dni):
         return jsonify({"error":"DNI inválido: debe tener 8 dígitos"}),400
+    # tienda única: usar la principal si el carrito es antiguo
     store_id = cart[0].get("store_id")
+    store = Store.query.get(store_id) if store_id else None
+    if not store:
+        store = Store.query.first()
+        store_id = store.id if store else None
+    if not store_id:
+        return jsonify({"error":"Tienda no configurada"}),500
     total = cart_total(cart)
     order = Order(store_id=store_id, customer_name=nombre, dni=dni, email=email, phone=phone, payment_method=payment, total=total)
     db.session.add(order)
@@ -357,9 +430,10 @@ def api_checkout():
             prod.stock = max(0, prod.stock - c["quantity"])
     db.session.commit()
     save_cart([])
-    whatsapp_message = "acabo de realizar una reserva de mi compra de tortas en su pagina web, aqui le adjunto la foto del pago de yape"
-    whatsapp_url = f"https://wa.me/51943846909?text={whatsapp_message.replace(' ', '%20')}"
-    return jsonify({"ok":True,"order_id":order.id,"whatsapp_url":whatsapp_url})
+    base_msg = "Realice una compra de torta en su pagina, aqui le adjunto el baucher, yape, plin, deposito"
+    detail = f"{base_msg} | Pedido #{order.id} | Total S/ {order.total:.2f} | Pago: {payment} | Cliente: {nombre}"
+    whatsapp_url = f"https://wa.me/51{WHATSAPP_NUMBER}?text={_quote(detail)}"
+    return jsonify({"ok":True,"order_id":order.id,"whatsapp_url":whatsapp_url,"total":order.total})
 
 @app.route("/checkout", methods=["POST"])
 def checkout_post():

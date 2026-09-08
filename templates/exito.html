@@ -6,23 +6,30 @@
       ✅
     </div>
     <h2 style="color:var(--café-intenso); margin-bottom:1rem;">¡Compra realizada con éxito!</h2>
-    <p style="color:#5a4a3a; margin-bottom:2rem; font-size:1.1rem;">Gracias por tu pedido. Estamos preparando tus tortas con mucho cariño.</p>
-    
-    <div style="background:white; padding:1.5rem; border-radius:12px; margin:1.5rem auto; max-width:400px; box-shadow:0 4px 16px rgba(56,36,23,0.08);">
-      <h3 style="color:var(--café-intenso); margin-bottom 1rem;">Detalle del pedido</h3>
+    <p style="color:#5a4a3a; margin-bottom:1rem; font-size:1.1rem;">Gracias <strong>{{ order.customer_name }}</strong>, tu pedido #{{ order.id }} ha sido registrado en nuestra tienda única.</p>
+
+    <div style="background:white; padding:1.5rem; border-radius:12px; margin:1.5rem auto; max-width:460px; box-shadow:0 4px 16px rgba(56,36,23,0.08); text-align:left;">
+      <h3 style="color:var(--café-intenso); margin-bottom:1rem;">Detalle del pedido</h3>
+      <p><strong>Tienda:</strong> {{ order.store.name }} — Av. Huancavelica N° 123, Huancayo</p>
       <p><strong>Número de pedido:</strong> #{{ order.id }}</p>
-      <p><strong>Total pagado:</strong> S/ {{ order.total|round(2) }}</p>
-      <p><strong>Método de pago:</strong> {{ order.payment_method }}</p>
+      <p><strong>Total pagado:</strong> S/ {{ '%.2f'|format(order.total) }}</p>
+      <p><strong>Método de pago:</strong> {{ order.payment_method|capitalize }}
+        {% if order.payment_method in payment_accounts %} — {{ payment_accounts[order.payment_method]['number'] }}{% endif %}
+      </p>
+      <p><strong>Fecha:</strong> {{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+      <hr style="margin:12px 0; border:none; border-top:1px dashed #e8e0d8">
+      {% for it in order.items %}
+      <p style="font-size:14px">{{ it.product_name }} <small style="color:#6a5a50">{{ it.variant_detail }} x{{ it.quantity }}</small> — <strong>S/ {{ '%.2f'|format(it.subtotal) }}</strong></p>
+      {% endfor %}
     </div>
-    
-    <div style="margin-top:2rem;">
-      <h4>Próximos pasos:</h4>
-      <ol style="text-align:left; margin:0 auto; max-width:400px; color:#5a4a3a;">
-        <li>Recibirás una notificación en WhatsApp al número 943846909</li>
-        <li>Confirma tu dirección de entrega</li>
-        <li>Tu pedido será entregado en un plazo de 45-60 minutos</li>
-      </ol>
+
+    <div style="background:#FFF8EF; border:1.5px dashed var(--miel); border-radius:14px; padding:14px; max-width:460px; margin:0 auto">
+      <p style="font-size:14px; color:var(--café-intenso)"><strong>Paso final:</strong> envíanos tu baucher, captura de Yape, Plin o depósito por WhatsApp para preparar tu pedido.</p>
+      <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-primary btn-block" style="margin-top:10px; background:#25D366">📲 Enviar voucher por WhatsApp ({{ whatsapp_number }})</a>
     </div>
+
+    <p style="margin-top:14px; color:#5a4a3a">📧 Comprobante enviado a {{ order.email }} • 📱 Confirmación al {{ order.phone }}</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary" style="margin-top:14px">Volver a la tienda</a>
   </div>
 </section>
 {% endblock %}
